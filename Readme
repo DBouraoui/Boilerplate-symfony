@@ -14,3 +14,12 @@
 }
 
 php bin/console lexik:jwt:generate-keypair
+
+
+copier .env en .env.local
+
+makefile :
+dev -> lance le dev  (adminer, server, postgres)
+prod -> lance la prod (adminer, server, postgres, grafana)
+down -> Stop le docker et clear les logs
+check -> lance phpstan pour vérifier le code

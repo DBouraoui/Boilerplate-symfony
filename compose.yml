@@ -1,0 +1,48 @@
+services:
+    php:
+        build:
+            context: .
+            dockerfile: Dockerfile
+        restart: always
+        depends_on:
+            -   boilerplate-database
+        ports:
+            - "80:80"
+            - "443:443"
+            - "443:443/udp"
+        volumes:
+            - .:/usr/share/frankenphp
+            - caddy_data:/data
+            - caddy_config:/config
+        networks:
+            - database_nw
+
+    boilerplate-database:
+        image: postgres:latest
+        restart: always
+        environment:
+            POSTGRES_PASSWORD: ${PG_PASSWORD:-root}
+            POSTGRES_USER: ${PG_USER:-root}
+            POSTGRES_DB: ${PG_DB:-app}
+        volumes:
+            - boilerplate_data:/var/lib/postgresql/data
+        networks:
+            - database_nw
+
+    adminer:
+        image: adminer
+        restart: always
+        ports:
+            - "8080:8080"
+        networks:
+            - database_nw
+
+volumes:
+    boilerplate_data:
+    caddy_data:
+    caddy_config:
+
+
+networks:
+    database_nw:
+        driver: bridge
