@@ -1,0 +1,18 @@
+parameters:
+    symfony:
+        containerXmlPath: var/cache/dev/App_KernelDevDebugContainer.xml
+    level: 5
+    paths:
+        - src
+        - tests
+    excludePaths:
+        - src/Kernel.php
+        - src/Migrations/*
+        - bin/*
+        - config/*
+        - var/*
+        - vendor/*
+        - tests/bootstrap.php
+
+includes:
+    - vendor/phpstan/phpstan-symfony/extension.neon
