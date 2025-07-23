@@ -7,7 +7,7 @@ services:
         depends_on:
             -   boilerplate-database
         ports:
-            - "80:80"
+            - "8000:80"
             - "443:443"
             - "443:443/udp"
         volumes:
@@ -16,6 +16,10 @@ services:
             - caddy_config:/config
         networks:
             - database_nw
+        deploy:
+            replicas: 1
+            restart_policy:
+                condition: on-failure
 
     boilerplate-database:
         image: postgres:latest
@@ -28,6 +32,17 @@ services:
             - boilerplate_data:/var/lib/postgresql/data
         networks:
             - database_nw
+            - adminer_nw
+            - grafana_nw
+        healthcheck:
+            test: [ "CMD-SHELL", "pg_isready -U ${PG_USER:-root}" ]
+            interval: 10s
+            timeout: 5s
+            retries: 5
+        deploy:
+            replicas: 1
+            restart_policy:
+                condition: on-failure
 
     adminer:
         image: adminer
@@ -35,7 +50,11 @@ services:
         ports:
             - "8080:8080"
         networks:
-            - database_nw
+            - adminer_nw
+        deploy:
+            replicas: 1
+            restart_policy:
+                condition: on-failure
 
 volumes:
     boilerplate_data:
@@ -45,4 +64,8 @@ volumes:
 
 networks:
     database_nw:
+        driver: bridge
+    adminer_nw:
+        driver: bridge
+    grafana_nw:
         driver: bridge
