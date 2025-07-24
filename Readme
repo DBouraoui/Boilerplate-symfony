@@ -5,6 +5,7 @@
 -serializer
 -validator
 -Symfony Uuid
+-symfony/rate-limiter
 -mailer (google mailer default not use in prod)
 -phpstan
 -test pack (phpunit) {

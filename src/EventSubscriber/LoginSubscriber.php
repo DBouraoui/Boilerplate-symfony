@@ -4,25 +4,42 @@ namespace App\EventSubscriber;
 
 use App\Entity\Session;
 use App\Entity\User;
-use Symfony\Component\EventDispatcher\EventSubscriberInterface;
-use Symfony\Component\Security\Http\Event\LoginSuccessEvent;
-use Psr\Log\LoggerInterface;
-use Symfony\Component\HttpFoundation\RequestStack;
 use Doctrine\ORM\EntityManagerInterface;
+use Psr\Log\LoggerInterface;
+use Symfony\Component\EventDispatcher\EventSubscriberInterface;
+use Symfony\Component\HttpFoundation\RequestStack;
+use Symfony\Component\Security\Http\Event\LoginSuccessEvent;
 
-class LoginSubscriber implements EventSubscriberInterface
+/**
+ * Subscriber that listens for user login events and logs useful session information.
+ *
+ * This subscriber listens to Symfony's LoginSuccessEvent, which is dispatched after a successful
+ * user authentication. It logs the login details (IP address, User-Agent, timestamp) to the logger
+ * and optionally persists them to the database for audit or security tracking.
+ *
+ * ✅ Automatically triggered after login when using Symfony's authenticator-based security system.
+ *
+ * Example data logged:
+ * - User email or ID
+ * - IP address
+ * - User agent (browser/device)
+ * - Login timestamp
+ *
+ * @author [DylanBro]
+ */
+readonly class LoginSubscriber implements EventSubscriberInterface
 {
-    private LoggerInterface $logger;
-    private RequestStack $requestStack;
-    private EntityManagerInterface $em;
+    public function __construct(
+        private LoggerInterface $logger,
+        private RequestStack $requestStack,
+        private EntityManagerInterface $entityManager,
+    ) {}
 
-    public function __construct(LoggerInterface $logger, RequestStack $requestStack, EntityManagerInterface $em)
-    {
-        $this->logger = $logger;
-        $this->requestStack = $requestStack;
-        $this->em = $em;
-    }
-
+    /**
+     * Returns the events this subscriber listens to.
+     *
+     * @return array<string, string>
+     */
     public static function getSubscribedEvents(): array
     {
         return [
@@ -30,6 +47,13 @@ class LoginSubscriber implements EventSubscriberInterface
         ];
     }
 
+    /**
+     * Handles the login success event.
+     *
+     * Logs and persists user session data such as IP address and user agent.
+     *
+     * @param LoginSuccessEvent $event The login event triggered by Symfony
+     */
     public function onLoginSuccess(LoginSuccessEvent $event): void
     {
         $user = $event->getUser();
@@ -39,20 +63,25 @@ class LoginSubscriber implements EventSubscriberInterface
         }
 
         $request = $this->requestStack->getCurrentRequest();
+        $ipAddress = $request?->getClientIp() ?? 'unknown';
+        $userAgent = $request?->headers->get('User-Agent') ?? 'unknown';
 
-        $ip = $request->getClientIp();
-        $agent = $request->headers->get('User-Agent');
+        // Log to file
+        $this->logger->info(sprintf(
+            "User '%s' logged in from IP %s - %s",
+            $user->getUserIdentifier(),
+            $ipAddress,
+            $userAgent
+        ));
 
-        // Log simple (dans var/log/dev.log)
-        $this->logger->info(sprintf("User '%s' logged in from %s - %s", $user->getUserIdentifier(), $ip, $agent));
+        // Persist session log to database
+        $session = new Session();
+        $session->setUserId($user);
+        $session->setIp($ipAddress);
+        $session->setUserAgent($userAgent);
+        $session->setLoggedAt(new \DateTimeImmutable());
 
-        $sessionLogs = new Session();
-        $sessionLogs->setUserId($user);
-        $sessionLogs->setUserAgent($agent);
-        $sessionLogs->setIp($ip);
-        $sessionLogs->setLoggedAt(new \DateTimeImmutable());
-
-        $this->em->persist($sessionLogs);
-        $this->em->flush();
+        $this->entityManager->persist($session);
+        $this->entityManager->flush();
     }
 }

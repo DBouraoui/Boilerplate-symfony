@@ -25,7 +25,7 @@ class Session
 
     #[ORM\ManyToOne(cascade: ['persist'], inversedBy: 'session')]
     #[ORM\JoinColumn(nullable: false)]
-    private ?User $userId = null;
+    private ?User $user = null;
 
     public function getId(): ?int
     {
@@ -70,12 +70,12 @@ class Session
 
     public function getUserId(): ?User
     {
-        return $this->userId;
+        return $this->user;
     }
 
-    public function setUserId(?User $userId): static
+    public function setUserId(?User $user): static
     {
-        $this->userId = $userId;
+        $this->user = $user;
 
         return $this;
     }
