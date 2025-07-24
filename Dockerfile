@@ -1,7 +1,6 @@
 FROM dunglas/frankenphp:1.2-php8.2-alpine
 
-# Dossier conseillé par FrankenPHP
-WORKDIR /usr/share/frankenphp/
+WORKDIR /app
 
 # Dépendances PHP pour PostgreSQL et Composer
 RUN apk add --no-cache postgresql-dev gcc g++ make autoconf libc-dev bash curl \

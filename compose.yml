@@ -5,13 +5,16 @@ services:
             dockerfile: Dockerfile
         restart: always
         depends_on:
-            -   boilerplate-database
+            - boilerplate-database
         ports:
-            - "8000:80"
+            - "8000:8080"
             - "443:443"
             - "443:443/udp"
+        environment:
+            SERVER_NAME: ":8080"  #Deactivate for prod for activate for https
+            CADDY_GLOBAL_OPTIONS: "auto_https off" #Deactivate for prod for activate for https
         volumes:
-            - .:/usr/share/frankenphp
+            - .:/app
             - caddy_data:/data
             - caddy_config:/config
         networks:

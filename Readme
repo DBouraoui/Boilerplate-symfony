@@ -23,3 +23,6 @@ dev -> lance le dev  (adminer, server, postgres)
 prod -> lance la prod (adminer, server, postgres, grafana)
 down -> Stop le docker et clear les logs
 check -> lance phpstan pour vérifier le code
+
+
+pour activer le https -> enlever les variables d'environments dans le compose.yml dans le service php et l'app s'executeras en https://localhost au lieux de http://localhost:8000
