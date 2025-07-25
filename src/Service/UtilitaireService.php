@@ -2,7 +2,9 @@
 
 namespace App\Service;
 
+use App\Event\EmailEvent;
 use App\Interface\DtoInterface;
+use Psr\EventDispatcher\EventDispatcherInterface;
 use Symfony\Component\Config\Definition\Exception\Exception;
 use Symfony\Component\ObjectMapper\ObjectMapper;
 use Symfony\Component\Serializer\SerializerInterface;
@@ -13,8 +15,9 @@ class UtilitaireService
 {
 
     public function __construct(
-        private ValidatorInterface $validator,
-        private SerializerInterface $serializer
+        private ValidatorInterface  $validator,
+        private SerializerInterface $serializer,
+        private EventDispatcherInterface $eventDispatcher
     ) {
     }
 
@@ -47,5 +50,11 @@ class UtilitaireService
         $this->validate($objectMapping);
 
         return $objectMapping;
+    }
+
+    public function sendEmail($subject, $to, $template, $context) {
+        $email = new EmailEvent($subject, $to, $template, $context);
+
+        $this->eventDispatcher->dispatch($email);
     }
 }

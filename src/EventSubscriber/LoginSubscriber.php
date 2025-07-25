@@ -4,7 +4,9 @@ namespace App\EventSubscriber;
 
 use App\Entity\Session;
 use App\Entity\User;
+use App\Event\RateLimiterEvent;
 use Doctrine\ORM\EntityManagerInterface;
+use Psr\EventDispatcher\EventDispatcherInterface;
 use Psr\Log\LoggerInterface;
 use Symfony\Component\EventDispatcher\EventSubscriberInterface;
 use Symfony\Component\HttpFoundation\RequestStack;
@@ -33,6 +35,7 @@ readonly class LoginSubscriber implements EventSubscriberInterface
         private LoggerInterface $logger,
         private RequestStack $requestStack,
         private EntityManagerInterface $entityManager,
+        private EventDispatcherInterface $dispatcher
     ) {}
 
     /**
@@ -57,6 +60,9 @@ readonly class LoginSubscriber implements EventSubscriberInterface
     public function onLoginSuccess(LoginSuccessEvent $event): void
     {
         $user = $event->getUser();
+
+        $event = new RateLimiterEvent($user->getUserIdentifier());
+        $this->dispatcher->dispatch($event);
 
         if (!$user instanceof User) {
             return;

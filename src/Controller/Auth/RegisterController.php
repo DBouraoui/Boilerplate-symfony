@@ -1,10 +1,11 @@
 <?php
 
-namespace App\Controller;
+namespace App\Controller\Auth;
 
 use App\DTO\UserRegisterDto;
+use App\Event\EmailEvent;
 use App\Event\RateLimiterEvent;
-use App\Service\UserService;
+use App\Service\AuthService;
 use App\Service\UtilitaireService;
 use Psr\EventDispatcher\EventDispatcherInterface;
 use Symfony\Bundle\FrameworkBundle\Controller\AbstractController;
@@ -27,14 +28,17 @@ use Symfony\Component\Routing\Attribute\Route;
  */
 final class RegisterController extends AbstractController
 {
+    public const EMAIL_TITLE="Welcome in my app !";
+    public const EMAIL_TEMPLATE="Welcome.html.twig";
+
     /**
-     * @param UserService $userService Handles user creation logic
+     * @param AuthService $userService Handles user creation logic
      * @param UtilitaireService $utilitaireService Utility to map/validate DTOs
      * @param EventDispatcherInterface $eventDispatcher Dispatches events (e.g. rate limiter)
      */
     public function __construct(
-        private UserService $userService,
-        private UtilitaireService $utilitaireService,
+        private AuthService              $userService,
+        private UtilitaireService        $utilitaireService,
         private EventDispatcherInterface $eventDispatcher,
     ) {}
 
@@ -64,9 +68,25 @@ final class RegisterController extends AbstractController
             );
 
             $user = $this->userService->createUser($userRegisterDto);
+            $userToken = $user->getUserToken();
 
-            return $this->json($user, Response::HTTP_CREATED);
+            $email = new EmailEvent(
+                self::EMAIL_TITLE,
+                $user->getEmail(),
+            self::EMAIL_TEMPLATE,
+                [
+                    "token_expiration"=> $userToken->getExpiredAt(),
+                    "user"=>$user,
+                    "validate_link"=> $_ENV['FRONT_URL']."/validate-email/".$userToken->getToken()
+                ]
+            );
+
+            $this->eventDispatcher->dispatch($email);
+
+            return $this->json("success", Response::HTTP_CREATED);
+
         } catch (\Throwable $throwable) {
+
             return $this->json(
                 ['error' => $throwable->getMessage()],
                 Response::HTTP_INTERNAL_SERVER_ERROR

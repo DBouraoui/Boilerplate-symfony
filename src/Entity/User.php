@@ -2,6 +2,7 @@
 
 namespace App\Entity;
 
+use App\Enum\TokenType;
 use App\Repository\UserRepository;
 use Doctrine\Common\Collections\ArrayCollection;
 use Doctrine\Common\Collections\Collection;
@@ -47,19 +48,20 @@ class User implements UserInterface, PasswordAuthenticatedUserInterface
     #[ORM\OneToMany(targetEntity: Session::class, mappedBy: 'userId', cascade: ['persist', 'remove'])]
     private Collection $session;
 
+    #[ORM\OneToOne(mappedBy: 'relatedUser',cascade: ['remove'])]
+    private ?UserToken $userToken = null;
+
+    #[ORM\Column(nullable: true)]
+    private ?\DateTimeImmutable $deletedAt = null;
+
+
     public function __construct()
     {
         $this->session = new ArrayCollection();
     }
 
-    #[ORM\PrePersist]
-    public function setPrePersist() {
-        $this->createdAt = new \DateTimeImmutable();
-        $this->updatedAt = new \DateTimeImmutable();
-    }
-
     #[ORM\PreUpdate]
-    public function setPreUpdate() {
+    protected function setPreUpdate() {
         $this->updatedAt = new \DateTimeImmutable();
     }
 
@@ -170,6 +172,58 @@ class User implements UserInterface, PasswordAuthenticatedUserInterface
                 $session->setUserId(null);
             }
         }
+
+        return $this;
+    }
+
+    public function getUserToken(): ?UserToken
+    {
+        return $this->userToken;
+    }
+
+    public function setUserToken(?UserToken $userToken): static
+    {
+        $this->userToken = $userToken;
+
+        if ($userToken && $userToken->getRelatedUser() !== $this) {
+            $userToken->setRelatedUser($this);
+        }
+
+        return $this;
+    }
+
+    public function isTokenExpired(): bool
+    {
+        $userToken = $this->getUserToken();
+        if (!empty($userToken)) {
+            return $userToken->getExpiredAt() >= new \DateTimeImmutable();
+        }
+
+        return false;
+    }
+
+    public function getDeletedAt(): ?\DateTimeImmutable
+    {
+        return $this->deletedAt;
+    }
+
+    public function setDeletedAt(?\DateTimeImmutable $deletedAt): static
+    {
+        $this->deletedAt = $deletedAt;
+
+        return $this;
+    }
+
+    public function setCreatedAt(\DateTimeImmutable $createdAt): static
+    {
+        $this->createdAt = $createdAt;
+
+        return $this;
+    }
+
+    public function setUpdatedAt(\DateTimeImmutable $updatedAt): static {
+
+        $this->updatedAt = $updatedAt;
 
         return $this;
     }

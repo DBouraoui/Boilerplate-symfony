@@ -1,4 +1,4 @@
-.PHONY: dev, prod, down, check
+.PHONY: dev, prod, down, check, consume
 
 dev:
 	docker compose -f compose.yml --env-file .env.local up -d --wait
@@ -11,3 +11,6 @@ down:
 
 check:
 	vendor/bin/phpstan analyse
+
+consume:
+	php bin/console messenger:consume async -vv
