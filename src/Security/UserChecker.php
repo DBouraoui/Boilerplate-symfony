@@ -32,7 +32,7 @@ readonly class UserChecker implements UserCheckerInterface
 
     private function checkUserStatus(User $user): void
     {
-        if ($user->getDeletedAt() !== null) {
+        if ($user->getDeletedAt() !== null || !$user->isActive()) {
             throw new CustomUserMessageAuthenticationException("Your account is not active.");
         }
     }

@@ -1,0 +1,28 @@
+{% extends 'email/base_email.html.twig' %}
+
+{% block subject %}Your password reset link has been refreshed{% endblock %}
+
+{% block content %}
+    <p>Hello <strong>{{ user.email|e }}</strong>,</p>
+
+    <p>Your previous password reset link has expired. A new link has been generated for you:</p>
+
+    <p style="text-align: center;">
+        <a href="{{ validate_link }}" target="_blank" style="
+            display: inline-block;
+            padding: 12px 20px;
+            background-color: #0069d9;
+            color: #ffffff;
+            text-decoration: none;
+            font-weight: bold;
+            border-radius: 5px;">
+            Change your password
+        </a>
+    </p>
+
+    <p>This new link will expire on <strong>{{ token_expiration|date('d-m-Y H:i') }}</strong>.</p>
+
+    <p>If you did not request a password reset, you can safely ignore this email.</p>
+
+    <p>Best regards,<br>The Team</p>
+{% endblock %}

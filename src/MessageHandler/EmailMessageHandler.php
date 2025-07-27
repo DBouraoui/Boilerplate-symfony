@@ -21,7 +21,7 @@ class EmailMessageHandler
             ->from($_SERVER['EMAIL_ADDRESS'])
             ->to($message->to)
             ->subject($message->subject)
-            ->htmlTemplate('email/' . $message->template)
+            ->htmlTemplate('email/' . $message->template . '.html.twig')
             ->context($message->context);
 
         try {

@@ -11,27 +11,30 @@ use Symfony\Component\HttpFoundation\Request;
 use Symfony\Component\HttpFoundation\Response;
 use Symfony\Component\Routing\Attribute\Route;
 
-class ForgetPasswordController extends AbstractController
+/**
+ * Handle forget password requests by sending a reset token.
+ */
+final class ForgetPasswordController extends AbstractController
 {
     public function __construct(
         private readonly UtilitaireService $utilitaireService,
-        private readonly AuthService $userService
-    ){}
+        private readonly AuthService $authService
+    ) {}
 
     #[Route(path: '/api/forget-password', name: 'forget-password', methods: ['POST'])]
-    public function index(Request $request) {
+    public function __invoke(Request $request): JsonResponse
+    {
         try {
             $data = json_decode($request->getContent());
 
-           $userForgetPasswordDto = $this->utilitaireService->mapAndValidateRequestDto($data, new UserForgetPasswordDto());
+            /** @var UserForgetPasswordDto $dto */
+            $dto = $this->utilitaireService->mapAndValidateRequestDto($data, new UserForgetPasswordDto());
 
-           $this->userService->forgetPassword($userForgetPasswordDto);
+            $this->authService->forgetPassword($dto);
 
-           return new JsonResponse(["success" => true], Response::HTTP_OK);
-
-        } catch (\Throwable $throwable) {
-
-            return new JsonResponse(['error' => $throwable->getMessage()], Response::HTTP_INTERNAL_SERVER_ERROR);
+            return new JsonResponse(['message' => 'Password reset email sent.'], Response::HTTP_OK);
+        } catch (\Throwable $e) {
+            return new JsonResponse(['error' => $e->getMessage()], Response::HTTP_INTERNAL_SERVER_ERROR);
         }
     }
 }

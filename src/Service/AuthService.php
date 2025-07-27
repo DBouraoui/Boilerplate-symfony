@@ -2,7 +2,6 @@
 
 namespace App\Service;
 
-use App\DTO\UserRegisterDto;
 use App\Entity\User;
 use App\Entity\UserToken;
 use App\Enum\TokenType;
@@ -33,7 +32,8 @@ readonly class AuthService
         $user->setEmail($dto->email)
             ->setPassword($this->userPasswordHasher->hashPassword($user, $dto->password))
             ->setCreatedAt($now)
-            ->setUpdatedAt($now);
+            ->setUpdatedAt($now)
+            ->setIsActive(false);
 
         $token = (new UserToken())
             ->setType(TokenType::REGISTER)
@@ -45,6 +45,17 @@ readonly class AuthService
         $this->entityManager->persist($user);
         $this->entityManager->persist($token);
         $this->entityManager->flush();
+
+         $this->utilitaireService->sendEmail(
+             "Welcome in my app !",
+             $user->getEmail(),
+             "Auth/Welcome",
+             [
+                 "token_expiration"=> $token->getExpiredAt(),
+                 "user"=>$user,
+                 "validate_link"=> $_ENV['FRONT_URL']."/validate-email/".$token->getToken()
+             ]
+         );
 
         return $user;
     }
@@ -65,7 +76,18 @@ readonly class AuthService
         }
 
         $this->entityManager->remove($user->getUserToken());
+        $user->setIsActive(true);
+
         $this->entityManager->flush();
+
+        $this->utilitaireService->sendEmail(
+            "Your email is confirmed !",
+            $user->getEmail(),
+            "Auth/ConfirmEmail",
+            [
+                "user"=>$user
+            ]
+        );
 
         return $user;
     }
@@ -84,7 +106,7 @@ readonly class AuthService
         if ($token) {
             if ($token->getType() === TokenType::FORGET_PASSWORD && $token->getExpiredAt() < $now) {
                 $token = $this->updateTokenUser($token, $now);
-                $this->sendForgetPasswordEmail($user, $token, "TokenRefresh.html.twig");
+                $this->sendForgetPasswordEmail($user, $token, "Auth/TokenRefresh");
                 return;
             }
 
@@ -97,7 +119,7 @@ readonly class AuthService
         }
 
         $token = $this->createTokenUser($user, $now);
-        $this->sendForgetPasswordEmail($user, $token, "ForgetPassword.html.twig");
+        $this->sendForgetPasswordEmail($user, $token, "Auth/ForgetPassword");
     }
 
     public function updatePassword(DtoInterface $dto): User
@@ -117,7 +139,7 @@ readonly class AuthService
         $this->utilitaireService->sendEmail(
             "Your email was changed",
             $userUpdate->getEmail(),
-            "UpdatePassword.html.twig",
+            "Auth/UpdatePassword",
             [
                 "user" => $user,
             ]
