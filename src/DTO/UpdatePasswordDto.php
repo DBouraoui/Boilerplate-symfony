@@ -6,13 +6,28 @@ use App\Interface\DtoInterface;
 use Symfony\Component\Validator\Constraints\NotBlank;
 use Symfony\Component\Validator\Constraints\NotNull;
 
+/**
+ * Data Transfer Object for password update request.
+ *
+ * This DTO is used when a user resets their password via a token received by email.
+ */
 class UpdatePasswordDto implements DtoInterface
 {
-    #[NotBlank]
-    #[NotNull]
+    /**
+     * The new password provided by the user.
+     *
+     * @var string
+     */
+    #[NotBlank(message: 'The password must not be blank.')]
+    #[NotNull(message: 'The password field is required.')]
     public string $password;
 
-    #[NotNull]
-    #[NotBlank]
+    /**
+     * The token associated with the password reset request.
+     *
+     * @var string
+     */
+    #[NotBlank(message: 'The token must not be blank.')]
+    #[NotNull(message: 'The token field is required.')]
     public string $token;
 }

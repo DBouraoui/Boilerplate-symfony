@@ -2,12 +2,12 @@
 
 namespace App\Message;
 
-class EmailMessage
+readonly class EmailMessage
 {
     public function __construct(
-        public readonly string $subject,
-        public readonly string $to,
-        public readonly string $template,
-        public readonly array $context = [],
+        public string $subject,
+        public string $to,
+        public string $template,
+        public array  $context = [],
     ) {}
 }

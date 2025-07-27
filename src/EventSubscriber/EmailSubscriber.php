@@ -7,7 +7,7 @@ use App\Message\EmailMessage;
 use Symfony\Component\EventDispatcher\EventSubscriberInterface;
 use Symfony\Component\Messenger\MessageBusInterface;
 
-class EmailSubscriber implements EventSubscriberInterface
+readonly class EmailSubscriber implements EventSubscriberInterface
 {
     public function __construct(
         private MessageBusInterface $bus,

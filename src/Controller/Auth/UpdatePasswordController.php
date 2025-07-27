@@ -10,26 +10,44 @@ use Symfony\Component\HttpFoundation\Request;
 use Symfony\Component\HttpFoundation\Response;
 use Symfony\Component\Routing\Attribute\Route;
 
+/**
+ * Handles user password update requests via token.
+ */
 class UpdatePasswordController extends AbstractController
 {
     public function __construct(
         private AuthService $userService,
         private UtilitaireService $utilitaireService
-    ){}
+    ) {}
 
+    /**
+     * Updates the user's password based on a valid token and the new password provided.
+     *
+     * @param Request $request The HTTP request containing the token and new password.
+     * @return Response A JSON response indicating success or failure.
+     */
     #[Route(path: '/api/update-password', name: 'app_updatePassword', methods: ['PATCH'])]
-    public function index(Request $request) {
+    public function __invoke(Request $request): Response
+    {
         try {
             $data = json_decode($request->getContent());
 
-            $updatePasswordDto = $this->utilitaireService->mapAndValidateRequestDto($data,new UpdatePasswordDto());
+            // Map and validate request data to a DTO
+            $updatePasswordDto = $this->utilitaireService->mapAndValidateRequestDto(
+                $data,
+                new UpdatePasswordDto()
+            );
 
+            // Process password update
             $this->userService->updatePassword($updatePasswordDto);
 
             return $this->json('success', Response::HTTP_OK);
-        } catch(\Throwable $throwable) {
 
-            return $this->json(['error' => $throwable->getMessage()], Response::HTTP_INTERNAL_SERVER_ERROR);
+        } catch (\Throwable $throwable) {
+            return $this->json(
+                ['error' => $throwable->getMessage()],
+                Response::HTTP_INTERNAL_SERVER_ERROR
+            );
         }
     }
 }

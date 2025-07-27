@@ -3,6 +3,7 @@
 namespace App\Controller\Auth;
 
 use App\Service\AuthService;
+use Symfony\Bundle\FrameworkBundle\Controller\AbstractController;
 use Symfony\Component\HttpFoundation\JsonResponse;
 use Symfony\Component\HttpFoundation\Request;
 use Symfony\Component\HttpFoundation\Response;
@@ -14,7 +15,7 @@ use Symfony\Component\Routing\Attribute\Route;
  *
  * Example: /api/confirm-email?token=xxxx&email=example@domain.com
  */
-final class ConfirmEmailController
+final class ConfirmEmailController extends AbstractController
 {
     public function __construct(
         private AuthService $authService,
@@ -33,10 +34,10 @@ final class ConfirmEmailController
 
             $this->authService->confirmEmail($token, $email);
 
-            return new JsonResponse(['message' => 'Email successfully confirmed.'], Response::HTTP_OK);
+            return $this->json(['message' => 'Email successfully confirmed.'], Response::HTTP_OK);
 
         } catch (\Throwable $e) {
-            throw new BadRequestHttpException($e->getMessage());
+            return $this->json(['error' => $e->getMessage()], Response::HTTP_BAD_REQUEST);
         }
     }
 }

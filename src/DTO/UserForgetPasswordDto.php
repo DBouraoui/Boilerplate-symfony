@@ -7,10 +7,21 @@ use Symfony\Component\Validator\Constraints\Email;
 use Symfony\Component\Validator\Constraints\NotBlank;
 use Symfony\Component\Validator\Constraints\NotNull;
 
+/**
+ * Data Transfer Object for requesting a password reset.
+ *
+ * This DTO is used when a user submits their email address to receive
+ * a password reset link.
+ */
 class UserForgetPasswordDto implements DtoInterface
 {
-    #[Email]
-    #[NotNull]
-    #[NotBlank]
+    /**
+     * The email address of the user requesting the password reset.
+     *
+     * @var string
+     */
+    #[Email(message: 'The email address format is invalid.')]
+    #[NotNull(message: 'The email field is required.')]
+    #[NotBlank(message: 'The email must not be blank.')]
     public string $email;
 }

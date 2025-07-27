@@ -15,14 +15,15 @@ readonly class AuthService
     public function __construct(
         private EntityManagerInterface      $entityManager,
         private UserPasswordHasherInterface $userPasswordHasher,
-        private UtilitaireService $utilitaireService
-    ) {
+        private UtilitaireService           $utilitaireService,
+    ) {}
 
-    }
-
-    public function createUser(DtoInterface $dto): User {
-
-        if ( $this->entityManager->getRepository(User::class)->findOneBy(['email' => $dto->email]) ) {
+    /**
+     * Crée un utilisateur avec un token de validation par e-mail.
+     */
+    public function createUser(DtoInterface $dto): User
+    {
+        if ($this->entityManager->getRepository(User::class)->findOneBy(['email' => $dto->email])) {
             throw new \Exception("User already exists");
         }
 
@@ -46,38 +47,35 @@ readonly class AuthService
         $this->entityManager->persist($token);
         $this->entityManager->flush();
 
-         $this->utilitaireService->sendEmail(
-             "Welcome in my app !",
-             $user->getEmail(),
-             "Auth/Welcome",
-             [
-                 "token_expiration"=> $token->getExpiredAt(),
-                 "user"=>$user,
-                 "validate_link"=> $_ENV['FRONT_URL']."/validate-email/".$token->getToken()
-             ]
-         );
+        $this->utilitaireService->sendEmail(
+            "Welcome in my app !",
+            $user->getEmail(),
+            "Auth/Welcome",
+            [
+                "token_expiration" => $token->getExpiredAt(),
+                "user" => $user,
+                "validate_link" => $_ENV['FRONT_URL'] . "/validate-email/" . $token->getToken(),
+            ]
+        );
 
         return $user;
     }
 
-    public function confirmEmail(string $token, string $email): User {
+    /**
+     * Confirme l'adresse e-mail de l'utilisateur avec un token.
+     */
+    public function confirmEmail(string $token, string $email): User
+    {
         $user = $this->entityManager->getRepository(User::class)->findOneBy(['email' => $email]);
 
-        if (empty($user)) {
-            throw new \Exception("User not found");
-        }
-
-        if ($user->getUserToken()->getToken()->toRfc4122() !== $token) {
-            throw new \Exception("User not found");
-        }
-
-        if ($user->getUserToken()->getType() !== TokenType::REGISTER) {
+        if (empty($user) ||
+            $user->getUserToken()->getToken()->toRfc4122() !== $token ||
+            $user->getUserToken()->getType() !== TokenType::REGISTER) {
             throw new \Exception("User not found");
         }
 
         $this->entityManager->remove($user->getUserToken());
         $user->setIsActive(true);
-
         $this->entityManager->flush();
 
         $this->utilitaireService->sendEmail(
@@ -85,13 +83,16 @@ readonly class AuthService
             $user->getEmail(),
             "Auth/ConfirmEmail",
             [
-                "user"=>$user
+                "user" => $user,
             ]
         );
 
         return $user;
     }
 
+    /**
+     * Gère la demande de mot de passe oublié.
+     */
     public function forgetPassword(DtoInterface $dto): void
     {
         $user = $this->entityManager->getRepository(User::class)->findOneBy(['email' => $dto->email]);
@@ -122,40 +123,45 @@ readonly class AuthService
         $this->sendForgetPasswordEmail($user, $token, "Auth/ForgetPassword");
     }
 
+    /**
+     * Met à jour le mot de passe d'un utilisateur via un token valide.
+     */
     public function updatePassword(DtoInterface $dto): User
     {
-        $userTokenModel = $this->entityManager->getRepository(UserToken::class)->findOneBy(['token'=>$dto->token]);
+        $userToken = $this->entityManager->getRepository(UserToken::class)->findOneBy(['token' => $dto->token]);
 
-        if (empty($userTokenModel)) {
+        if (empty($userToken)) {
             throw new \Exception("User not found");
         }
 
-        $user = $userTokenModel->getRelatedUser();
+        $user = $userToken->getRelatedUser();
+        $updatedUser = $this->updatePasswordUser($user, $dto);
 
-        $userUpdate = $this->updatePasswordUser($user, $dto);
-
-        $this->deleteTokenUser($userTokenModel);
+        $this->deleteTokenUser($userToken);
 
         $this->utilitaireService->sendEmail(
             "Your email was changed",
-            $userUpdate->getEmail(),
+            $updatedUser->getEmail(),
             "Auth/UpdatePassword",
             [
-                "user" => $user,
+                "user" => $updatedUser,
             ]
         );
 
-        return $user;
+        return $updatedUser;
     }
 
+    /**
+     * Crée un nouveau token de type FORGET_PASSWORD pour un utilisateur.
+     */
     private function createTokenUser(User $user, \DateTimeImmutable $now): UserToken
     {
-        $userToken = new UserToken();
-        $userToken->setToken(Uuid::v4());
-        $userToken->setType(TokenType::FORGET_PASSWORD);
-        $userToken->setCreatedAt($now);
-        $userToken->setExpiredAt($now->modify('+2 hours'));
-        $userToken->setRelatedUser($user);
+        $userToken = (new UserToken())
+            ->setToken(Uuid::v4())
+            ->setType(TokenType::FORGET_PASSWORD)
+            ->setCreatedAt($now)
+            ->setExpiredAt($now->modify('+2 hours'))
+            ->setRelatedUser($user);
 
         $this->entityManager->persist($userToken);
         $this->entityManager->flush();
@@ -163,7 +169,11 @@ readonly class AuthService
         return $userToken;
     }
 
-    private function updateTokenUser(UserToken $userToken, \DateTimeImmutable $now): UserToken {
+    /**
+     * Met à jour la date d’expiration d’un token existant.
+     */
+    private function updateTokenUser(UserToken $userToken, \DateTimeImmutable $now): UserToken
+    {
         $userToken->setExpiredAt($now->modify('+2 hours'));
         $this->entityManager->persist($userToken);
         $this->entityManager->flush();
@@ -171,12 +181,18 @@ readonly class AuthService
         return $userToken;
     }
 
+    /**
+     * Supprime un token utilisateur.
+     */
     private function deleteTokenUser(UserToken $userToken): void
     {
         $this->entityManager->remove($userToken);
         $this->entityManager->flush();
     }
 
+    /**
+     * Envoie l’e-mail de réinitialisation de mot de passe.
+     */
     private function sendForgetPasswordEmail(User $user, UserToken $token, string $template): void
     {
         $this->utilitaireService->sendEmail(
@@ -191,12 +207,15 @@ readonly class AuthService
         );
     }
 
-    private function updatePasswordUser(User $user, DtoInterface $dto): User {
+    /**
+     * Met à jour le mot de passe hashé d’un utilisateur.
+     */
+    private function updatePasswordUser(User $user, DtoInterface $dto): User
+    {
         $user->setPassword($this->userPasswordHasher->hashPassword($user, $dto->password));
         $this->entityManager->persist($user);
         $this->entityManager->flush();
 
         return $user;
     }
-
 }
