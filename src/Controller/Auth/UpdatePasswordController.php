@@ -5,6 +5,7 @@ namespace App\Controller\Auth;
 use App\DTO\UpdatePasswordDto;
 use App\Service\AuthService;
 use App\Service\UtilitaireService;
+use Psr\Log\LoggerInterface;
 use Symfony\Bundle\FrameworkBundle\Controller\AbstractController;
 use Symfony\Component\HttpFoundation\Request;
 use Symfony\Component\HttpFoundation\Response;
@@ -16,8 +17,8 @@ use Symfony\Component\Routing\Attribute\Route;
 class UpdatePasswordController extends AbstractController
 {
     public function __construct(
-        private AuthService $userService,
-        private UtilitaireService $utilitaireService
+        private AuthService       $userService,
+        private UtilitaireService $utilitaireService, private readonly LoggerInterface $logger
     ) {}
 
     /**
@@ -39,7 +40,9 @@ class UpdatePasswordController extends AbstractController
             );
 
             // Process password update
-            $this->userService->updatePassword($updatePasswordDto);
+           $user = $this->userService->updatePassword($updatePasswordDto);
+
+           $this->logger->log(1,sprintf("%s update password",$user->getEmail()));
 
             return $this->json('success', Response::HTTP_OK);
 

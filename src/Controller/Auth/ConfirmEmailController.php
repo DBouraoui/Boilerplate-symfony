@@ -3,6 +3,7 @@
 namespace App\Controller\Auth;
 
 use App\Service\AuthService;
+use Psr\Log\LoggerInterface;
 use Symfony\Bundle\FrameworkBundle\Controller\AbstractController;
 use Symfony\Component\HttpFoundation\JsonResponse;
 use Symfony\Component\HttpFoundation\Request;
@@ -18,7 +19,7 @@ use Symfony\Component\Routing\Attribute\Route;
 final class ConfirmEmailController extends AbstractController
 {
     public function __construct(
-        private AuthService $authService,
+        private AuthService $authService, private readonly LoggerInterface $logger,
     ) {}
 
     #[Route(path: '/api/confirm-email', name: 'confirm-email', methods: ['GET'])]
@@ -32,7 +33,9 @@ final class ConfirmEmailController extends AbstractController
                 throw new \InvalidArgumentException("Missing required parameters: 'token' and 'email'.");
             }
 
-            $this->authService->confirmEmail($token, $email);
+           $user = $this->authService->confirmEmail($token, $email);
+
+            $this->logger->log(1,sprintf("%s confirm her email",$user->getEmail()));
 
             return $this->json(['message' => 'Email successfully confirmed.'], Response::HTTP_OK);
 

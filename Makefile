@@ -1,4 +1,4 @@
-.PHONY: dev, prod, down, check, consume
+.PHONY: dev, prod, down, check, consume, test
 
 dev:
 	docker compose -f compose.yml --env-file .env.local up -d --wait
@@ -14,3 +14,6 @@ check:
 
 consume:
 	php bin/console messenger:consume async -vv
+
+test:
+	php bin/phpunit --testdox

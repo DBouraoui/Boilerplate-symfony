@@ -5,6 +5,7 @@ namespace App\Controller\Auth;
 use App\DTO\UserForgetPasswordDto;
 use App\Service\AuthService;
 use App\Service\UtilitaireService;
+use Psr\Log\LoggerInterface;
 use Symfony\Bundle\FrameworkBundle\Controller\AbstractController;
 use Symfony\Component\HttpFoundation\JsonResponse;
 use Symfony\Component\HttpFoundation\Request;
@@ -18,7 +19,7 @@ final class ForgetPasswordController extends AbstractController
 {
     public function __construct(
         private readonly UtilitaireService $utilitaireService,
-        private readonly AuthService $authService
+        private readonly AuthService       $authService, private readonly LoggerInterface $logger
     ) {}
 
     #[Route(path: '/api/forget-password', name: 'forget-password', methods: ['POST'])]
@@ -31,6 +32,8 @@ final class ForgetPasswordController extends AbstractController
             $dto = $this->utilitaireService->mapAndValidateRequestDto($data, new UserForgetPasswordDto());
 
             $this->authService->forgetPassword($dto);
+
+            $this->logger->log(1,sprintf("send email for reset password at %s", $dto->email));
 
             return $this->json(['message' => 'Password reset email sent.'], Response::HTTP_OK);
         } catch (\Throwable $e) {

@@ -7,6 +7,7 @@ use App\Event\RateLimiterEvent;
 use App\Service\AuthService;
 use App\Service\UtilitaireService;
 use Psr\EventDispatcher\EventDispatcherInterface;
+use Psr\Log\LoggerInterface;
 use Symfony\Bundle\FrameworkBundle\Controller\AbstractController;
 use Symfony\Component\HttpFoundation\JsonResponse;
 use Symfony\Component\HttpFoundation\Request;
@@ -27,6 +28,7 @@ final class RegisterController extends AbstractController
         private readonly AuthService              $authService,
         private readonly UtilitaireService        $utilService,
         private readonly EventDispatcherInterface $dispatcher,
+        private readonly LoggerInterface $logger,
     ) {}
 
     /**
@@ -52,7 +54,9 @@ final class RegisterController extends AbstractController
             );
 
             // Create user and generate token
-            $this->authService->createUser($registerDto);
+           $user =  $this->authService->createUser($registerDto);
+
+            $this->logger->log(1,sprintf("%s register", $user->getEmail()));
 
             return $this->json('success', Response::HTTP_CREATED);
 
