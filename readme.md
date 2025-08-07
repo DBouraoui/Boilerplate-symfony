@@ -41,7 +41,16 @@
    cp .env .env.local
    ```
 
-3. Compléter les informations nécessaires dans `.env.test`
+3. Compléter les informations nécessaires dans `.env.test.local`
+
+4. Générer les clés JWT pour les tests :
+
+   ```bash
+    openssl genrsa -out config/jwt/private-test.pem -aes256 4096
+    openssl rsa -pubout -in config/jwt/private-test.pem -out config/jwt/public-test.pem
+   ```
+   
+    /!\Ne pas oublier de copier la passphrase dans .env.test.local
 
 ---
 
