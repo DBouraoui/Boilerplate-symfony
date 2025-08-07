@@ -75,7 +75,7 @@ final class ForgetPasswordControllerTest extends WebTestCase
     public function testSendingEmailForgetPasswordWithBadPayload(): void
     {
         $this->createUser($this->client, $this->email, $this->password);
-        $token = $this->connexionUserAndReturnToken($this->client, $this->email, $this->password);
+        $this->connexionUserAndReturnToken($this->client, $this->email, $this->password);
 
         $this->client->request(
             'POST',
@@ -96,7 +96,7 @@ final class ForgetPasswordControllerTest extends WebTestCase
     public function testSendingEmailForgetPasswordWithEmptyPayload(): void
     {
         $this->createUser($this->client, $this->email, $this->password);
-        $token = $this->connexionUserAndReturnToken($this->client, $this->email, $this->password);
+        $this->connexionUserAndReturnToken($this->client, $this->email, $this->password);
 
         $this->client->request(
             'POST',
