@@ -20,7 +20,8 @@ final class UpdatePasswordControllerTest extends WebTestCase
     public string $password = "password";
     public string $newPassword = "newPassword";
 
-    public const UPDATE_PASSWORD__PATH = '/api/update-password';
+    public const UPDATE_PASSWORD_PATH = '/api/update-password';
+    public const FORGET_PASSWORD_PATH = '/api/forget-password';
 
     protected function setUp(): void
     {
@@ -43,7 +44,7 @@ final class UpdatePasswordControllerTest extends WebTestCase
 
         $this->client->request(
             'POST',
-            '/api/forget-password',
+            self::FORGET_PASSWORD_PATH,
             [],
             [],
             [
@@ -60,7 +61,7 @@ final class UpdatePasswordControllerTest extends WebTestCase
 
         $this->client->request(
             'PATCH',
-                self::UPDATE_PASSWORD__PATH,
+                self::UPDATE_PASSWORD_PATH,
             [],
             [],
             [
@@ -86,7 +87,7 @@ final class UpdatePasswordControllerTest extends WebTestCase
 
         $this->client->request(
             'POST',
-            '/api/forget-password',
+            self::FORGET_PASSWORD_PATH,
             [],
             [],
             [
@@ -103,7 +104,7 @@ final class UpdatePasswordControllerTest extends WebTestCase
 
         $this->client->request(
             'PATCH',
-            self::UPDATE_PASSWORD__PATH,
+            self::UPDATE_PASSWORD_PATH,
             [],
             [],
             [
@@ -125,7 +126,7 @@ final class UpdatePasswordControllerTest extends WebTestCase
 
         $this->client->request(
             'POST',
-            '/api/forget-password',
+            self::FORGET_PASSWORD_PATH,
             [],
             [],
             [
@@ -142,7 +143,7 @@ final class UpdatePasswordControllerTest extends WebTestCase
 
         $this->client->request(
             'PATCH',
-            self::UPDATE_PASSWORD__PATH,
+            self::UPDATE_PASSWORD_PATH,
             [],
             [],
             [
@@ -169,7 +170,7 @@ final class UpdatePasswordControllerTest extends WebTestCase
 
         $this->client->request(
             'POST',
-            '/api/forget-password',
+            self::FORGET_PASSWORD_PATH,
             [],
             [],
             [
@@ -186,7 +187,7 @@ final class UpdatePasswordControllerTest extends WebTestCase
 
         $this->client->request(
             'PATCH',
-            self::UPDATE_PASSWORD__PATH,
+            self::UPDATE_PASSWORD_PATH,
             [],
             [],
             [
@@ -208,7 +209,7 @@ final class UpdatePasswordControllerTest extends WebTestCase
 
         $this->client->request(
             'POST',
-            '/api/forget-password',
+            self::FORGET_PASSWORD_PATH,
             [],
             [],
             [
@@ -225,7 +226,7 @@ final class UpdatePasswordControllerTest extends WebTestCase
 
         $this->client->request(
             'PATCH',
-            self::UPDATE_PASSWORD__PATH,
+            self::UPDATE_PASSWORD_PATH,
             [],
             [],
             [
@@ -247,7 +248,7 @@ final class UpdatePasswordControllerTest extends WebTestCase
 
         $this->client->request(
             'POST',
-            '/api/forget-password',
+            self::FORGET_PASSWORD_PATH,
             [],
             [],
             [
@@ -264,7 +265,7 @@ final class UpdatePasswordControllerTest extends WebTestCase
 
         $this->client->request(
             'PATCH',
-            self::UPDATE_PASSWORD__PATH,
+            self::UPDATE_PASSWORD_PATH,
             [],
             [],
             [

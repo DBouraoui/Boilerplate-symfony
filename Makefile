@@ -1,4 +1,4 @@
-.PHONY: dev, prod, down, check, consume, test
+.PHONY: dev, prod, down, check, consume, test, clean-cache
 
 dev:
 	docker compose -f compose.yml --env-file .env.local up -d --wait
@@ -17,3 +17,6 @@ consume:
 
 test:
 	php bin/phpunit --testdox
+
+clean-cache:
+	php bin/console cache:clear --env=dev && php bin/console cache:clear --env=test

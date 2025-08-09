@@ -14,6 +14,7 @@ final class ForgetPasswordControllerTest extends WebTestCase
 
     public string $email = "tes@test.com";
     public string $password = "password";
+    public const FORGET_PASSWORD_PATH = '/api/forget-password';
 
     protected function setUp(): void
     {
@@ -37,7 +38,7 @@ final class ForgetPasswordControllerTest extends WebTestCase
 
         $this->client->request(
             'POST',
-            '/api/forget-password',
+            self::FORGET_PASSWORD_PATH,
             [],
             [],
             [
@@ -58,7 +59,7 @@ final class ForgetPasswordControllerTest extends WebTestCase
 
         $this->client->request(
             'POST',
-            '/api/forget-password',
+            self::FORGET_PASSWORD_PATH,
             [],
             [],
             [
@@ -79,7 +80,7 @@ final class ForgetPasswordControllerTest extends WebTestCase
 
         $this->client->request(
             'POST',
-            '/api/forget-password',
+            self::FORGET_PASSWORD_PATH,
             [],
             [],
             [
@@ -100,7 +101,7 @@ final class ForgetPasswordControllerTest extends WebTestCase
 
         $this->client->request(
             'POST',
-            '/api/forget-password',
+            self::FORGET_PASSWORD_PATH,
             [],
             [],
             [
