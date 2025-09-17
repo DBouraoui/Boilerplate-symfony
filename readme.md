@@ -52,6 +52,13 @@
    
     /!\Ne pas oublier de copier la passphrase dans .env.test.local
 
+5. Effectuer les migrations:
+
+   ```bash
+   docker compose exec php bin/console make:migration
+   docker compose exec php bin/console d:m:m
+   ```
+
 ---
 
 ## 🛠️ Makefile Commands
